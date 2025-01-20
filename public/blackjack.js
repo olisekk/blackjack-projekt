@@ -1,40 +1,55 @@
-let dealerSum = 0;
-let yourSum = 0;
+let dealerSum = 0;  
+let yourSum = 0;  
 
-let dealerAceCount = 0;
-let yourAceCount = 0;
+let dealerAceCount = 0;  
+let yourAceCount = 0;  
 
-let hidden;
-let deck;
+let hidden; 
+let deck;  
 
-let canHit = true; // hráč může táhnout, dokud yourSum <= 21
-let balance = 10000; // Počáteční balance
-let betAmount = 100; // Sázka na jednu hru
+let canHit = true;  
+let balance = 10000; 
+let betAmount = 100;  
 
 window.onload = function () {
-    buildDeck();
-    shuffleDeck();
-    startGame();
-    updateBalanceDisplay();
-    updateBetDisplay();
-    document.getElementById("restart").addEventListener("click", restartGame);
+    buildDeck();  
+    shuffleDeck();  
+    startGame();  
+    updateBalanceDisplay(); 
+    updateBetDisplay(); 
+    document.getElementById("restart").addEventListener("click", restartGame);  
+    document.getElementById("bet-amount-input").addEventListener("input", updateBetAmountFromInput); 
+    document.getElementById("hit").addEventListener("click", hit);  
+    document.getElementById("stay").addEventListener("click", stay);  
 };
 
-function buildDeck() {
-    let values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-    let types = ["C", "D", "H", "S"];
-    deck = [];
+// Funkce pro deaktivaci tlačítka "Next Game" na 1 sekundu
+function disableNextGameButton() {
+    const nextGameButton = document.getElementById("restart");
+    nextGameButton.disabled = true;  // Deaktivuje tlačítko
 
+    setTimeout(() => {
+        nextGameButton.disabled = false; 
+    }, 1000);  // Časová prodleva 1 sekunda
+}
+
+function buildDeck() {
+    let values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];  // Možné hodnoty karet
+    let types = ["C", "D", "H", "S"];  // Možné typy karet (srdce, káry, atd.)
+    deck = [];  // Inicializace prázdného balíčku
+
+    // Generování balíčku kombinováním hodnot a typů karet
     for (let i = 0; i < types.length; i++) {
         for (let j = 0; j < values.length; j++) {
-            deck.push(values[j] + "-" + types[i]); // A-C -> K-C, A-D -> K-D
+            deck.push(values[j] + "-" + types[i]);  // Například "A-C" pro eso srdcové
         }
     }
 }
 
 function shuffleDeck() {
+    // Zamíchání balíčku karet
     for (let i = 0; i < deck.length; i++) {
-        let j = Math.floor(Math.random() * deck.length);
+        let j = Math.floor(Math.random() * deck.length);  // Náhodný index pro zamíchání
         let temp = deck[i];
         deck[i] = deck[j];
         deck[j] = temp;
@@ -43,142 +58,136 @@ function shuffleDeck() {
 
 function startGame() {
     // Skrytá karta dealera
-    hidden = deck.pop();
-    dealerSum += getValue(hidden);
-    dealerAceCount += checkAce(hidden);
+    hidden = deck.pop();  
+    dealerSum += getValue(hidden);  
+    dealerAceCount += checkAce(hidden);  
 
-    // Dealer táhne karty dokud jeho hodnota není minimálně 17
+    // Dealer táhne karty, dokud jeho součet není alespoň 17
     while (dealerSum < 17) {
         let cardImg = document.createElement("img");
-        let card = deck.pop();
-        cardImg.src = "./cards/" + card + ".png";
-        dealerSum += getValue(card);
-        dealerAceCount += checkAce(card);
-        document.getElementById("dealer-cards").append(cardImg);
+        let card = deck.pop();  
+        cardImg.src = "./cards/" + card + ".png";  
+        dealerSum += getValue(card);  
+        dealerAceCount += checkAce(card);  
+        document.getElementById("dealer-cards").append(cardImg); 
     }
 
-    // Zobraz hodnotu dealera (bez skryté karty)
+    // Zobrazení hodnoty dealera bez skryté karty
     document.getElementById("dealer-sum").innerText = reduceAce(dealerSum - getValue(hidden), dealerAceCount);
 
-    // Kontrola, jestli dealer nemá 21
+    // Kontrola, jestli dealer nemá 21 (Blackjack)
     if (reduceAce(dealerSum, dealerAceCount) === 21) {
         canHit = false;
-        document.getElementById("results").innerText = "You Lose!";
-        document.getElementById("hidden").src = "./cards/" + hidden + ".png"; // Odkryj dealerovu skrytou kartu
-        adjustBalance("lose");
-        return;
+        document.getElementById("results").innerText = "You Lose!";  
+        document.getElementById("hidden").src = "./cards/" + hidden + ".png";  // Odkrytí karty dealera
+        adjustBalance("lose");  
+        return;  
     }
 
-    // Rozdej 2 karty hráči
+    // Rozdání dvou karet hráči
     for (let i = 0; i < 2; i++) {
         let cardImg = document.createElement("img");
-        let card = deck.pop();
-        cardImg.src = "./cards/" + card + ".png";
-        yourSum += getValue(card);
-        yourAceCount += checkAce(card);
-        document.getElementById("your-cards").append(cardImg);
+        let card = deck.pop(); 
+        cardImg.src = "./cards/" + card + ".png";  
+        yourSum += getValue(card);  
+        yourAceCount += checkAce(card);  
+        document.getElementById("your-cards").append(cardImg); 
     }
 
-    // Zobraz hodnotu hráče
+    // Zobrazení hodnoty hráče
     let adjustedSum = reduceAce(yourSum, yourAceCount);
     document.getElementById("your-sum").innerText = adjustedSum;
 
-    // Kontrola, jestli hráč nemá 21
+    // Kontrola, jestli hráč nemá 21 (Blackjack)
     if (adjustedSum === 21) {
         canHit = false;
-        document.getElementById("results").innerText = "You Win!";
-        adjustBalance("win");
+        document.getElementById("results").innerText = "You Win!";  // Hráč vyhrál
+        adjustBalance("win");  // Zvýšení zůstatku
     }
-
-    // Nastavení událostí pro tlačítka
-    document.getElementById("hit").addEventListener("click", hit);
-    document.getElementById("stay").addEventListener("click", stay);
-    document.getElementById("increase-bet").addEventListener("click", () => adjustBet(100));
-    document.getElementById("decrease-bet").addEventListener("click", () => adjustBet(-100));
 }
 
 function hit() {
     if (!canHit) {
-        return;
+        return;  
     }
 
+    // Vytáhne další kartu pro hráče
     let cardImg = document.createElement("img");
     let card = deck.pop();
-    cardImg.src = "./cards/" + card + ".png";
-    yourSum += getValue(card);
-    yourAceCount += checkAce(card);
-    document.getElementById("your-cards").append(cardImg);
+    cardImg.src = "./cards/" + card + ".png";  
+    yourSum += getValue(card);  
+    yourAceCount += checkAce(card);  // Kontrola esa
+    document.getElementById("your-cards").append(cardImg);  // Přidá kartu do zobrazení
 
-    // Aktualizuj hodnotu hráče
+    // Aktualizuje hodnotu hráče
     let adjustedSum = reduceAce(yourSum, yourAceCount);
     document.getElementById("your-sum").innerText = adjustedSum;
 
+    // Kontrola, zda hráč přetáhl nebo vyhrál
     if (adjustedSum > 21) {
         canHit = false;
-        document.getElementById("results").innerText = "You Lose!";
-        adjustBalance("lose");
+        document.getElementById("results").innerText = "You Lose!";  
+        adjustBalance("lose");  // Snížení zůstatku
     } else if (adjustedSum === 21) {
         canHit = false;
-        document.getElementById("results").innerText = "You Win!";
-        adjustBalance("win");
+        document.getElementById("results").innerText = "You Win!";  
+        adjustBalance("win");  // Zvýšení zůstatku
     }
 }
 
 function stay() {
-    // Aktualizuj finální hodnoty
-    dealerSum = reduceAce(dealerSum, dealerAceCount);
-    yourSum = reduceAce(yourSum, yourAceCount);
+
+    dealerSum = reduceAce(dealerSum, dealerAceCount);  // Přepočítá součet dealera
+    yourSum = reduceAce(yourSum, yourAceCount);  // Přepočítá součet hráče
 
     canHit = false;
-    document.getElementById("hidden").src = "./cards/" + hidden + ".png";
+    document.getElementById("hidden").src = "./cards/" + hidden + ".png";  // Odkrytí karty dealera
 
-    // Zobraz finální hodnotu dealera
+    // Zobrazí finální hodnotu dealera
     document.getElementById("dealer-sum").innerText = dealerSum;
 
     let message = "";
     if (yourSum > 21) {
-        message = "You Lose!";
-        adjustBalance("lose");
+        message = "You Lose!";  
+        adjustBalance("lose");  
     } else if (dealerSum > 21) {
-        message = "You Win!";
-        adjustBalance("win");
+        message = "You Win!";  
+        adjustBalance("win");  
     } else if (yourSum === dealerSum) {
-        message = "Tie!";
+        message = "Tie!";  
     } else if (yourSum > dealerSum) {
-        message = "You Win!";
-        adjustBalance("win");
+        message = "You Win!";  
+        adjustBalance("win");  
     } else if (yourSum < dealerSum) {
-        message = "You Lose!";
-        adjustBalance("lose");
+        message = "You Lose!";  
+        adjustBalance("lose");  
     }
 
-    document.getElementById("results").innerText = message;
+    document.getElementById("results").innerText = message;  // Zobrazení výsledku
 }
 
 function getValue(card) {
-    let data = card.split("-"); // "A-C" -> ["A", "C"]
+    let data = card.split("-");  // Rozdělení karty na hodnotu a typ
     let value = data[0];
 
-    if (isNaN(value)) { // A, J, Q, K
+    if (isNaN(value)) {  // Pokud to není číslo, znamená to, že je to eso nebo obrázková karta
         if (value === "A") {
-            return 1; // Eso má vždy hodnotu 1
+            return 1;  // Eso má vždy hodnotu 1
         }
-        return 10; // J, Q, K mají hodnotu 10
+        return 10;  // J, Q, K mají hodnotu 10
     }
-    return parseInt(value);
+    return parseInt(value); 
 }
 
 function checkAce(card) {
     if (card[0] === "A") {
-        return 1; // Počítáme počet es, ale hodnota esa je vždy 1
+        return 1; 
     }
     return 0;
 }
 
-// Funkce reduceAce již není potřeba
-
-
 function reduceAce(playerSum, playerAceCount) {
+    // Pokud součet přesahuje 21 a máme eso, snížíme hodnotu eso na 1 místo 11
     while (playerSum > 21 && playerAceCount > 0) {
         playerSum -= 10;
         playerAceCount -= 1;
@@ -187,51 +196,55 @@ function reduceAce(playerSum, playerAceCount) {
 }
 
 function adjustBalance(result) {
+    // Upraví zůstatek 
     if (result === "win") {
-        balance += betAmount * 2;
+        balance += betAmount * 2; 
     } else if (result === "lose") {
-        balance -= betAmount;
-    }
-    
-    if (balance < 0) {
-        balance = 10000;  // Opravit hodnotu balance, pokud klesne pod nulu
-        alert("You don't have enough balance to continue playing!");
+        balance -= betAmount;  
     }
 
-    updateBalanceDisplay();
+    // Pokud zůstatek klesne na nulu, restartujeme hru
+    if (balance <= 0) {
+        balance = 10000;  
+        alert("Your balance has reached 0. The game is restarting with a balance of 10000!");
+        restartGame();  
+    }
+
+    updateBalanceDisplay(); 
 }
-
 
 function updateBalanceDisplay() {
-    document.getElementById("balance").textContent = `Balance: ${balance}`;
+    document.getElementById("balance").textContent = `Balance: ${balance}`; 
 }
 
-function adjustBet(amount) {
-    const newBetAmount = betAmount + amount;
+function updateBetAmountFromInput() {
+    // Změna sázky na základě uživatelského vstupu
+    const betInput = document.getElementById("bet-amount-input").value.trim();
+    
+    // Pokud je vstup neplatný, resetuje sázku zpět na původní hodnotu
+    if (!betInput || isNaN(betInput) || parseInt(betInput) <= 0) {
+        document.getElementById("bet-amount-input").value = betAmount;
+        return;
+    }
 
-    // Zkontroluj, zda výsledná sázka nepřesahuje limity
-    if (newBetAmount >= 100 && newBetAmount <= balance) {
-        betAmount = newBetAmount; // Aktualizuj sázku o přesně 100 nahoru/dolů
-        updateBetDisplay();
-    } else if (newBetAmount > balance) {
-        alert("You don't have enough balance to increase your bet!");
-    } else if (newBetAmount < 100) {
-        alert("Bet amount cannot be lower than 100.");
+    const newBetAmount = parseInt(betInput);
+
+    // Zkontroluje, zda sázka nepřesahuje zůstatek
+    if (newBetAmount > balance) {
+        alert("You don't have enough balance to set this bet!");
+        document.getElementById("bet-amount-input").value = betAmount;  // Reset zpět na původní hodnotu
+    } else {
+        betAmount = newBetAmount;  // Nová hodnota sázky
+        updateBetDisplay();  
     }
 }
 
-
-
-
-
-
-
-
 function updateBetDisplay() {
-    document.getElementById("bet-amount").textContent = `Bet: ${betAmount}`;
+    document.getElementById("bet-amount-input").value = betAmount;  // Aktualizuje zobrazení aktuální sázky
 }
 
 function restartGame() {
+    // Restartuje hru a nastaví počáteční hodnoty
     dealerSum = 0;
     yourSum = 0;
     dealerAceCount = 0;
@@ -239,17 +252,19 @@ function restartGame() {
     canHit = true;
 
     // Resetování karet a výsledků
-    document.getElementById("dealer-cards").innerHTML = '<img id="hidden" src="./cards/BACK.png">';
-    document.getElementById("your-cards").innerHTML = "";
-    document.getElementById("results").innerText = "";
-    document.getElementById("dealer-sum").innerText = "";
-    document.getElementById("your-sum").innerText = "";
+    document.getElementById("dealer-cards").innerHTML = '<img id="hidden" src="./cards/BACK.png">'; 
+    document.getElementById("your-cards").innerHTML = "";  
+    document.getElementById("results").innerText = "";  
+    document.getElementById("dealer-sum").innerText = "";  
+    document.getElementById("your-sum").innerText = "";  
 
-    betAmount = 100;
-    updateBetDisplay();
+    betAmount = 100;  // Reset sázky na 100
+    updateBetDisplay();  // Zobrazení nové sázky
 
-    buildDeck();
-    shuffleDeck();
-    startGame();
+    buildDeck();  // Vytvoření nového balíčku
+    shuffleDeck();  
+    startGame();  // Nová hra
+
+    
+    disableNextGameButton();  
 }
-
