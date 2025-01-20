@@ -172,7 +172,7 @@ function getValue(card) {
 
     if (isNaN(value)) {  // Pokud to není číslo, znamená to, že je to eso nebo obrázková karta
         if (value === "A") {
-            return 1;  // Eso má vždy hodnotu 1
+            return 11;  // Eso má vždy hodnotu 1
         }
         return 10;  // J, Q, K mají hodnotu 10
     }
