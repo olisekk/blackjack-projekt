@@ -25,6 +25,7 @@ body {
     height: 175px;
     width: 125px;
     margin: 1px;
+    
 }
 
 #hit {
@@ -37,4 +38,8 @@ body {
     width: 100px;
     height: 50px;
     font-size: 17px;
+}
+
+h2 {
+    color: white; /* Nastaví text na bílou pro všechny h2 elementy */
 }
