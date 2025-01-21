@@ -206,7 +206,7 @@ function adjustBalance(result) {
     // Pokud zůstatek klesne na nulu, restartujeme hru
     if (balance <= 0) {
         balance = 10000;  
-        alert("Your balance has reached 0. The game is restarting with a balance of 10000!");
+        alert("Prohral jsi, tvoje balance je na 0, restartuju hru a dam ti 10000balance!");
         restartGame();  
     }
 
