@@ -78,7 +78,7 @@ function startGame() {
     // Kontrola, jestli dealer nemá 21 (Blackjack)
     if (reduceAce(dealerSum, dealerAceCount) === 21) {
         canHit = false;
-        document.getElementById("results").innerText = "You Lose!";  
+        document.getElementById("results").innerText = "Prohral jsi!";  
         document.getElementById("hidden").src = "./cards/" + hidden + ".png";  // Odkrytí karty dealera
         adjustBalance("lose");  
         return;  
@@ -101,7 +101,7 @@ function startGame() {
     // Kontrola, jestli hráč nemá 21 (Blackjack)
     if (adjustedSum === 21) {
         canHit = false;
-        document.getElementById("results").innerText = "You Win!";  // Hráč vyhrál
+        document.getElementById("results").innerText = "Vyhral jsi!";  // Hráč vyhrál
         adjustBalance("win");  // Zvýšení zůstatku
     }
 }
@@ -126,11 +126,11 @@ function hit() {
     // Kontrola, zda hráč přetáhl nebo vyhrál
     if (adjustedSum > 21) {
         canHit = false;
-        document.getElementById("results").innerText = "You Lose!";  
+        document.getElementById("results").innerText = "Prohral jsi!";  
         adjustBalance("lose");  // Snížení zůstatku
     } else if (adjustedSum === 21) {
         canHit = false;
-        document.getElementById("results").innerText = "You Win!";  
+        document.getElementById("results").innerText = "Prohral jsi!";  
         adjustBalance("win");  // Zvýšení zůstatku
     }
 }
@@ -148,18 +148,18 @@ function stay() {
 
     let message = "";
     if (yourSum > 21) {
-        message = "You Lose!";  
+        message = "Prohral jsi!";  
         adjustBalance("lose");  
     } else if (dealerSum > 21) {
-        message = "You Win!";  
+        message = "Vyhral jsi!";  
         adjustBalance("win");  
     } else if (yourSum === dealerSum) {
         message = "Tie!";  
     } else if (yourSum > dealerSum) {
-        message = "You Win!";  
+        message = "Vyhral jsi!";  
         adjustBalance("win");  
     } else if (yourSum < dealerSum) {
-        message = "You Lose!";  
+        message = "Prohral jsi!";  
         adjustBalance("lose");  
     }
 
@@ -231,7 +231,7 @@ function updateBetAmountFromInput() {
 
     // Zkontroluje, zda sázka nepřesahuje zůstatek
     if (newBetAmount > balance) {
-        alert("You don't have enough balance to set this bet!");
+        alert("Nemas dostatecnou balance na takovou sazku!");
         document.getElementById("bet-amount-input").value = betAmount;  // Reset zpět na původní hodnotu
     } else {
         betAmount = newBetAmount;  // Nová hodnota sázky
